@@ -8,7 +8,7 @@ In Claude Code, run:
 
 ```
 /plugin marketplace add Tsagaanbayr1/datacom-domain-skill
-/plugin install datacom@Tsagaanbayr1-datacom-domain-skill
+/plugin install datacom@datacom-domain-skill
 /reload-plugins
 ```
 

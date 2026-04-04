@@ -1,0 +1,17 @@
+{
+  "name": "datacom-domain-skill",
+  "owner": {
+    "name": "Tsagaanbayr1"
+  },
+  "plugins": [
+    {
+      "name": "datacom",
+      "source": "./",
+      "description": "Search domain name availability and WHOIS lookup via datacom.mn — Mongolia's domain registrar",
+      "version": "1.0.0",
+      "author": {
+        "name": "Tsagaanbayr1"
+      }
+    }
+  ]
+}
