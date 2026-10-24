@@ -26,9 +26,10 @@ RAW=$(cat <<'DATACOM_ARG'
 $ARGUMENTS
 DATACOM_ARG
 )
-DOMAIN=$(printf '%s' "$RAW" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
+DOMAIN=$(printf '%s' "$RAW" | tr '[:upper:]' '[:lower:]')
+DOMAIN=${DOMAIN#"${DOMAIN%%[![:space:]]*}"}; DOMAIN=${DOMAIN%"${DOMAIN##*[![:space:]]}"}
 DOMAIN=${DOMAIN#http://}; DOMAIN=${DOMAIN#https://}; DOMAIN=${DOMAIN%/}
-if printf '%s' "$DOMAIN" | grep -Eq '^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$'; then
+if [[ $DOMAIN =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$ ]]; then
   curl -s -X POST "https://datacom.mn/whois" \
     -H "Accept: text/x-component" \
     -H "Content-Type: text/plain;charset=UTF-8" \

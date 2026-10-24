@@ -15,8 +15,9 @@ Given the domain name "$ARGUMENTS", check its availability across all supported 
 ### Step 1: Clean the name and check availability
 
 Run this as **one** command, copied exactly. The argument is read through a quoted
-heredoc, so the shell never expands or runs anything in it, and only a name made of
-3–63 lowercase letters, digits and hyphens is ever sent to datacom.mn.
+heredoc, so the shell never expands or runs anything in it. Surrounding spaces are
+trimmed, and only a name made of 3–63 letters, digits and hyphens (no spaces
+inside) is ever sent to datacom.mn.
 
 If the argument spans more than one line, do not run anything: ask the user for a
 single domain name instead. Never paste the argument anywhere else in the command.
@@ -26,10 +27,11 @@ RAW=$(cat <<'DATACOM_ARG'
 $ARGUMENTS
 DATACOM_ARG
 )
-NAME=$(printf '%s' "$RAW" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')
+NAME=$(printf '%s' "$RAW" | tr '[:upper:]' '[:lower:]')
+NAME=${NAME#"${NAME%%[![:space:]]*}"}; NAME=${NAME%"${NAME##*[![:space:]]}"}
 NAME=${NAME#http://}; NAME=${NAME#https://}; NAME=${NAME#www.}
 for tld in ub.mn org.mn mn io biz info name mobi tv cc asia; do NAME=${NAME%".$tld"}; done
-if printf '%s' "$NAME" | grep -Eq '^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$'; then
+if [[ $NAME =~ ^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$ ]]; then
   echo "Searching for: $NAME"
   curl -s -X POST "https://datacom.mn/search" \
     -H "Accept: text/x-component" \

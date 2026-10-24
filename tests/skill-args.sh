@@ -4,6 +4,7 @@
 # nothing is sent to datacom.mn.
 #
 #   bash tests/skill-args.sh
+#   SKILL_SHELL=zsh bash tests/skill-args.sh     # run the skill commands under zsh instead
 #
 # Checks that hostile arguments (quotes, `$(...)`, backticks) are never executed by
 # the shell, that invalid names never reach curl, and that valid names still do.
@@ -47,7 +48,7 @@ run() {
   : > "$WORK/curl.log"
   local arg="${2//CANARY/$CANARY}"
   render "$skill" "$arg" > "$WORK/script.sh"
-  (cd "$WORK" && CURL_LOG="$WORK/curl.log" PATH="$WORK/bin:$PATH" bash "$WORK/script.sh" >/dev/null 2>&1)
+  (cd "$WORK" && CURL_LOG="$WORK/curl.log" PATH="$WORK/bin:$PATH" "${SKILL_SHELL:-bash}" "$WORK/script.sh" >/dev/null 2>&1)
   CANARY_HIT=0; [ -e "$CANARY" ] && CANARY_HIT=1
   CURL_CALLS=$(grep -c '^-X$' "$WORK/curl.log" || true)
 }
@@ -80,6 +81,16 @@ check "search-domain: request body is not the cleaned name" \
 
 run search-domain "my-shop.ub.mn"
 check "search-domain: .ub.mn suffix not stripped" "$(grep -qF '"my-shop.mn"' "$WORK/curl.log" && echo 0 || echo 1)"
+
+run search-domain "  Example.MN  "
+check "search-domain: surrounding spaces were not trimmed" "$(grep -qF '"example.mn"' "$WORK/curl.log" && echo 0 || echo 1)"
+
+for arg in "exa mple" "exa	mple.mn" "$(printf 'example\nother')"; do
+  run search-domain "$arg"
+  check "search-domain: name with inner whitespace [$arg] reached curl" "$([ "$CURL_CALLS" = 0 ] && echo 0 || echo 1)"
+  run whois "$arg"
+  check "whois: domain with inner whitespace [$arg] reached curl" "$([ "$CURL_CALLS" = 0 ] && echo 0 || echo 1)"
+done
 
 run search-domain "ab"
 check "search-domain: 2-character name reached curl" "$([ "$CURL_CALLS" = 0 ] && echo 0 || echo 1)"
