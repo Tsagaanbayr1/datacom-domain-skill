@@ -8,7 +8,7 @@
       "name": "datacom",
       "source": "./",
       "description": "Search domain name availability and WHOIS lookup via datacom.mn — Mongolia's domain registrar",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "Tsagaanbayr1"
       }

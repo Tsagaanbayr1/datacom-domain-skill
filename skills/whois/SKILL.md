@@ -14,13 +14,34 @@ Given the domain "$ARGUMENTS", look up its WHOIS information.
 
 ### Step 1: Run the WHOIS query
 
+Run this as **one** command, copied exactly. The argument is read through a quoted
+heredoc, so the shell never expands or runs anything in it, and only a well-formed
+domain name (letters, digits, hyphens and dots, with a TLD) is ever sent.
+
+If the argument spans more than one line, do not run anything: ask the user for a
+single domain instead. Never paste the argument anywhere else in the command.
+
 ```bash
-curl -s -X POST "https://datacom.mn/whois" \
-  -H "Accept: text/x-component" \
-  -H "Content-Type: text/plain;charset=UTF-8" \
-  -H "Next-Action: cffab30bfe61084fc501c41680d6d802e3269b58" \
-  --data "[\"$ARGUMENTS\"]"
+RAW=$(cat <<'DATACOM_ARG'
+$ARGUMENTS
+DATACOM_ARG
+)
+DOMAIN=$(printf '%s' "$RAW" | tr '[:upper:]' '[:lower:]')
+DOMAIN=${DOMAIN#"${DOMAIN%%[![:space:]]*}"}; DOMAIN=${DOMAIN%"${DOMAIN##*[![:space:]]}"}
+DOMAIN=${DOMAIN#http://}; DOMAIN=${DOMAIN#https://}; DOMAIN=${DOMAIN%/}
+if [[ $DOMAIN =~ ^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?[.])+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$ ]]; then
+  curl -s -X POST "https://datacom.mn/whois" \
+    -H "Accept: text/x-component" \
+    -H "Content-Type: text/plain;charset=UTF-8" \
+    -H "Next-Action: cffab30bfe61084fc501c41680d6d802e3269b58" \
+    --data "[\"${DOMAIN}\"]"
+else
+  echo "INVALID_DOMAIN: give one domain with its TLD, e.g. google.mn" >&2
+fi
 ```
+
+If it prints `INVALID_DOMAIN`, tell the user to give a single domain including its
+TLD (e.g. `google.mn`) and stop.
 
 ### Step 2: Parse the response
 
