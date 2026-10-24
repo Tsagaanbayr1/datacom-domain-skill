@@ -41,6 +41,10 @@ This plugin teaches Claude how to call datacom.mn's API via curl. No dependencie
 
 This plugin calls datacom.mn's Next.js Server Actions directly via curl. The `Next-Action` header IDs are tied to their current deployment and may need updating if they redeploy their site. If you get errors, please [open an issue](https://github.com/Tsagaanbayr1/datacom-domain-skill/issues).
 
+## Testing
+
+`bash tests/skill-args.sh` runs each skill's commands with a stubbed `curl` (nothing is sent to datacom.mn) and checks that only a validated name or domain ever reaches the request, whatever the argument contains.
+
 ## License
 
 MIT
